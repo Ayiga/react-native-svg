@@ -41,7 +41,7 @@ class GroupView extends RenderableView {
         invalidate();
     }
 
-    void setupGlyphContext(Canvas canvas) {
+    GlyphContext setupGlyphContext(Canvas canvas) {
         RectF clipBounds = new RectF(canvas.getClipBounds());
         if (mMatrix != null) {
             mMatrix.mapRect(clipBounds);
@@ -49,41 +49,27 @@ class GroupView extends RenderableView {
         if (mTransform != null) {
             mTransform.mapRect(clipBounds);
         }
-        mGlyphContext = new GlyphContext(mScale, clipBounds.width(), clipBounds.height());
+        return new GlyphContext(mScale, clipBounds.width(), clipBounds.height());
     }
 
-    GlyphContext getGlyphContext() {
-        return mGlyphContext;
+    void pushGlyphContext(GlyphContext glyphContext) {
+        glyphContext.pushContext(this, mFont);
     }
 
-    private static <T> T requireNonNull(T obj) {
-        if (obj == null)
-            throw new NullPointerException();
-        return obj;
+    void popGlyphContext(GlyphContext glyphContext) {
+        glyphContext.popContext();
     }
 
-    GlyphContext getTextRootGlyphContext() {
-        return requireNonNull(getTextRoot()).getGlyphContext();
-    }
-
-    void pushGlyphContext() {
-        getTextRootGlyphContext().pushContext(this, mFont);
-    }
-
-    void popGlyphContext() {
-        getTextRootGlyphContext().popContext();
-    }
-
-    void draw(final Canvas canvas, final Paint paint, final float opacity) {
-        setupGlyphContext(canvas);
+    void draw(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
+        final GlyphContext nextContext = setupGlyphContext(canvas);
         if (opacity > MIN_OPACITY_FOR_DRAW) {
-            clip(canvas, paint);
-            drawGroup(canvas, paint, opacity);
+            clip(canvas, glyphContext, paint);
+            drawGroup(canvas, nextContext, paint, opacity);
         }
     }
 
-    void drawGroup(final Canvas canvas, final Paint paint, final float opacity) {
-        pushGlyphContext();
+    void drawGroup(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
+        pushGlyphContext(glyphContext);
         final SvgView svg = getSvgView();
         final GroupView self = this;
         final RectF groupRect = new RectF();
@@ -99,7 +85,7 @@ class GroupView extends RenderableView {
                 }
 
                 int count = node.saveAndSetupCanvas(canvas);
-                node.render(canvas, paint, opacity * mOpacity);
+                node.render(canvas, glyphContext, paint, opacity * mOpacity);
                 RectF r = node.getClientRect();
                 if (r != null) {
                     groupRect.union(r);
@@ -116,22 +102,22 @@ class GroupView extends RenderableView {
                 }
             } else if (child instanceof SvgView) {
                 SvgView svgView = (SvgView)child;
-                svgView.drawChildren(canvas);
+                svgView.drawChildren(canvas, glyphContext);
                 if (svgView.isResponsible()) {
                     svg.enableTouchEvents();
                 }
             }
         }
         this.setClientRect(groupRect);
-        popGlyphContext();
+        popGlyphContext(glyphContext);
     }
 
-    void drawPath(Canvas canvas, Paint paint, float opacity) {
-        super.draw(canvas, paint, opacity);
+    void drawPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
+        super.draw(canvas, glyphContext, paint, opacity);
     }
 
     @Override
-    Path getPath(final Canvas canvas, final Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         if (mPath != null) {
             return mPath;
         }
@@ -145,14 +131,14 @@ class GroupView extends RenderableView {
             if (node instanceof VirtualView) {
                 VirtualView n = (VirtualView)node;
                 Matrix transform = n.mMatrix;
-                mPath.addPath(n.getPath(canvas, paint), transform);
+                mPath.addPath(n.getPath(canvas, glyphContext, paint), transform);
             }
         }
 
         return mPath;
     }
 
-    Path getPath(final Canvas canvas, final Paint paint, final Region.Op op) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final Region.Op op) {
         final Path path = new Path();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -167,9 +153,9 @@ class GroupView extends RenderableView {
                     Matrix transform = n.mMatrix;
                     Path p2;
                     if (n instanceof GroupView) {
-                        p2 = ((GroupView)n).getPath(canvas, paint, op);
+                        p2 = ((GroupView)n).getPath(canvas, glyphContext, paint, op);
                     } else {
-                        p2 = n.getPath(canvas, paint);
+                        p2 = n.getPath(canvas, glyphContext, paint);
                     }
                     p2.transform(transform);
                     path.op(p2, pop);
@@ -189,9 +175,9 @@ class GroupView extends RenderableView {
                     Matrix transform = n.mMatrix;
                     Path p2;
                     if (n instanceof GroupView) {
-                        p2 = ((GroupView)n).getPath(canvas, paint, op);
+                        p2 = ((GroupView)n).getPath(canvas, glyphContext, paint, op);
                     } else {
-                        p2 = n.getPath(canvas, paint);
+                        p2 = n.getPath(canvas, glyphContext, paint);
                     }
                     if (transform != null) {
                         p2.transform(transform);

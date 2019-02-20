@@ -13,6 +13,7 @@ import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
 
 class SvgViewModule extends ReactContextBaseJavaModule {
     SvgViewModule(ReactApplicationContext reactContext) {
@@ -26,7 +27,7 @@ class SvgViewModule extends ReactContextBaseJavaModule {
 
 
     @ReactMethod
-    public void toDataURL(int tag, Callback successCallback) {
+    public void toDataURL(int tag, final Callback successCallback) {
         SvgView svg = SvgViewManager.getSvgViewByTag(tag);
 
         if (svg != null) {

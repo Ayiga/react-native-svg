@@ -55,12 +55,12 @@ class EllipseView extends RenderableView {
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         Path path = new Path();
-        double cx = relativeOnWidth(mCx);
-        double cy = relativeOnHeight(mCy);
-        double rx = relativeOnWidth(mRx);
-        double ry = relativeOnHeight(mRy);
+        double cx = relativeOnWidth(glyphContext, mCx);
+        double cy = relativeOnHeight(glyphContext, mCy);
+        double rx = relativeOnWidth(glyphContext, mRx);
+        double ry = relativeOnHeight(glyphContext, mRy);
         RectF oval = new RectF((float) (cx - rx), (float) (cy - ry), (float) (cx + rx), (float) (cy + ry));
         path.addOval(oval, Path.Direction.CW);
 

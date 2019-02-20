@@ -95,11 +95,11 @@ class TextPathView extends TextView {
     }
 
     @Override
-    void draw(Canvas canvas, Paint paint, float opacity) {
-        drawGroup(canvas, paint, opacity);
+    void draw(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
+        drawGroup(canvas, glyphContext, paint, opacity);
     }
 
-    Path getTextPath(Canvas canvas, Paint paint) {
+    Path getTextPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         SvgView svg = getSvgView();
         VirtualView template = svg.getDefinedTemplate(mHref);
 
@@ -109,21 +109,21 @@ class TextPathView extends TextView {
         }
 
         RenderableView view = (RenderableView)template;
-        return view.getPath(canvas, paint);
+        return view.getPath(canvas, glyphContext, paint);
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
-        return getGroupPath(canvas, paint);
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
+        return getGroupPath(canvas, glyphContext, paint);
     }
 
     @Override
-    void pushGlyphContext() {
+    void pushGlyphContext(GlyphContext glyphContext) {
         // do nothing
     }
 
     @Override
-    void popGlyphContext() {
+    void popGlyphContext(GlyphContext glyphContext) {
         // do nothing
     }
 }

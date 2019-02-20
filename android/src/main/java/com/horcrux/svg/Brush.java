@@ -142,7 +142,7 @@ class Brush {
                 canvas.scale(width / scale, height / scale);
             }
 
-            mPattern.draw(canvas, new Paint(), opacity);
+            mPattern.draw(canvas, new GlyphContext(scale, width, height), new Paint(), opacity);
 
             Matrix patternMatrix = new Matrix();
             if (mMatrix != null) {

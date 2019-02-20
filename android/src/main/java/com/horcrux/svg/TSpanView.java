@@ -63,11 +63,11 @@ class TSpanView extends TextView {
     }
 
     @Override
-    void draw(Canvas canvas, Paint paint, float opacity) {
+    void draw(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
         if (mContent != null) {
             int numEmoji = emoji.size();
             if (numEmoji > 0) {
-                GlyphContext gc = getTextRootGlyphContext();
+                GlyphContext gc = glyphContext;
                 FontData font = gc.getFont();
                 applyTextPropertiesToPaint(paint, font);
                 for (int i = 0; i < numEmoji; i++) {
@@ -79,35 +79,35 @@ class TSpanView extends TextView {
                     canvas.restore();
                 }
             }
-            drawPath(canvas, paint, opacity);
+            drawPath(canvas, glyphContext, paint, opacity);
         } else {
-            clip(canvas, paint);
-            drawGroup(canvas, paint, opacity);
+            clip(canvas, glyphContext, paint);
+            drawGroup(canvas, glyphContext, paint, opacity);
         }
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         if (mPath != null) {
             return mPath;
         }
 
         if (mContent == null) {
-            mPath = getGroupPath(canvas, paint);
+            mPath = getGroupPath(canvas, glyphContext, paint);
             return mPath;
         }
 
         setupTextPath();
 
-        pushGlyphContext();
-        mPath = getLinePath(mContent, paint, canvas);
-        popGlyphContext();
+        pushGlyphContext(glyphContext);
+        mPath = getLinePath(mContent, paint, canvas, glyphContext);
+        popGlyphContext(glyphContext);
 
         return mPath;
     }
 
     @SuppressWarnings("ConstantConditions")
-    private Path getLinePath(String line, Paint paint, Canvas canvas) {
+    private Path getLinePath(final String line, final Paint paint, final Canvas canvas, final GlyphContext glyphContext) {
         final int length = line.length();
         final Path path = new Path();
 
@@ -120,7 +120,7 @@ class TSpanView extends TextView {
         boolean isClosed = false;
         final boolean hasTextPath = textPath != null;
         if (hasTextPath) {
-            pm = new PathMeasure(textPath.getTextPath(canvas, paint), false);
+            pm = new PathMeasure(textPath.getTextPath(canvas, glyphContext, paint), false);
             pathLength = pm.getLength();
             isClosed = pm.isClosed();
             if (pathLength == 0) {
@@ -128,7 +128,7 @@ class TSpanView extends TextView {
             }
         }
 
-        GlyphContext gc = getTextRootGlyphContext();
+        final GlyphContext gc = glyphContext;
         FontData font = gc.getFont();
         applyTextPropertiesToPaint(paint, font);
         GlyphPathBag bag = new GlyphPathBag(paint);

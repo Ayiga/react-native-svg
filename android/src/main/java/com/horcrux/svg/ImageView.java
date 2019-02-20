@@ -119,7 +119,7 @@ class ImageView extends RenderableView {
     }
 
     @Override
-    void draw(final Canvas canvas, final Paint paint, final float opacity) {
+    void draw(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
         if (!mLoading.get()) {
             ImagePipeline imagePipeline = Fresco.getImagePipeline();
             ImageSource imageSource = new ImageSource(mContext, uriString);
@@ -127,7 +127,7 @@ class ImageView extends RenderableView {
             boolean inMemoryCache = imagePipeline.isInBitmapMemoryCache(request);
 
             if (inMemoryCache) {
-                tryRenderFromBitmapCache(imagePipeline, request, canvas, paint, opacity * mOpacity);
+                tryRenderFromBitmapCache(imagePipeline, request, canvas, glyphContext, paint, opacity * mOpacity);
             } else {
                 loadBitmap(imagePipeline, request);
             }
@@ -135,9 +135,9 @@ class ImageView extends RenderableView {
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         Path path = new Path();
-        path.addRect(getRect(), Path.Direction.CW);
+        path.addRect(getRect(glyphContext), Path.Direction.CW);
         return path;
     }
 
@@ -167,11 +167,11 @@ class ImageView extends RenderableView {
     }
 
     @Nonnull
-    private RectF getRect() {
-        double x = relativeOnWidth(mX);
-        double y = relativeOnHeight(mY);
-        double w = relativeOnWidth(mW);
-        double h = relativeOnHeight(mH);
+    private RectF getRect(final GlyphContext glyphContext) {
+        double x = relativeOnWidth(glyphContext, mX);
+        double y = relativeOnHeight(glyphContext, mY);
+        double w = relativeOnWidth(glyphContext, mW);
+        double h = relativeOnHeight(glyphContext, mH);
         if (w == 0) {
             w = mImageWidth * mScale;
         }
@@ -182,20 +182,20 @@ class ImageView extends RenderableView {
         return new RectF((float) x, (float) y, (float) (x + w), (float) (y + h));
     }
 
-    private void doRender(Canvas canvas, Paint paint, Bitmap bitmap, float opacity) {
+    private void doRender(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final Bitmap bitmap, final float opacity) {
         if (mImageWidth == 0 || mImageHeight == 0) {
             mImageWidth = bitmap.getWidth();
             mImageHeight = bitmap.getHeight();
         }
 
-        RectF renderRect = getRect();
+        RectF renderRect = getRect(glyphContext);
         RectF vbRect = new RectF(0, 0, mImageWidth, mImageHeight);
         Matrix transform = ViewBox.getTransform(vbRect, renderRect, mAlign, mMeetOrSlice);
         transform.mapRect(vbRect);
 
-        canvas.clipPath(getPath(canvas, paint));
+        canvas.clipPath(getPath(canvas, glyphContext, paint));
 
-        Path clipPath = getClipPath(canvas, paint);
+        Path clipPath = getClipPath(canvas, glyphContext, paint);
         if (clipPath != null) {
             canvas.clipPath(clipPath);
         }
@@ -207,7 +207,7 @@ class ImageView extends RenderableView {
         this.setClientRect(vbRect);
     }
 
-    private void tryRenderFromBitmapCache(ImagePipeline imagePipeline, ImageRequest request, Canvas canvas, Paint paint, float opacity) {
+    private void tryRenderFromBitmapCache(final ImagePipeline imagePipeline, final ImageRequest request, final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
         final DataSource<CloseableReference<CloseableImage>> dataSource
                 = imagePipeline.fetchImageFromBitmapCache(request, mContext);
 
@@ -230,7 +230,7 @@ class ImageView extends RenderableView {
                     return;
                 }
 
-                doRender(canvas, paint, bitmap, opacity);
+                doRender(canvas, glyphContext, paint, bitmap, opacity);
 
             } catch (Exception e) {
                 throw new IllegalStateException(e);

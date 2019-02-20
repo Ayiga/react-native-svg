@@ -33,7 +33,7 @@ class PathView extends RenderableView {
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         return mPath;
     }
 

@@ -136,51 +136,12 @@ abstract public class VirtualView extends ReactViewGroup {
         }
     }
 
-    @Nullable
-    GroupView getTextRoot() {
-        VirtualView node = this;
-        if (mTextRoot == null) {
-            while (node != null) {
-                if (node instanceof GroupView && ((GroupView) node).getGlyphContext() != null) {
-                    mTextRoot = (GroupView)node;
-                    break;
-                }
-
-                ViewParent parent = node.getParent();
-
-                if (!(parent instanceof VirtualView)) {
-                    node = null;
-                } else {
-                    node = (VirtualView)parent;
-                }
-            }
-        }
-
-        return mTextRoot;
-    }
-
-    @Nullable
-    GroupView getParentTextRoot() {
-        ViewParent parent = this.getParent();
-        if (!(parent instanceof VirtualView)) {
-            return null;
-        } else {
-            return ((VirtualView) parent).getTextRoot();
-        }
-    }
-
-
-    private double getFontSizeFromContext() {
+    private double getFontSizeFromContext(GlyphContext glyphContext) {
         if (fontSize != -1) {
             return fontSize;
         }
-        GroupView root = getTextRoot();
-        if (root == null) {
-            return DEFAULT_FONT_SIZE;
-        }
-
         if (glyphContext == null) {
-            glyphContext = root.getGlyphContext();
+            return DEFAULT_FONT_SIZE;
         }
 
         fontSize = glyphContext.getFontSize();
@@ -188,9 +149,9 @@ abstract public class VirtualView extends ReactViewGroup {
         return fontSize;
     }
 
-    abstract void draw(Canvas canvas, Paint paint, float opacity);
-    void render(Canvas canvas, Paint paint, float opacity) {
-        draw(canvas, paint, opacity);
+    abstract void draw(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity);
+    void render(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
+        draw(canvas, glyphContext, paint, opacity);
     }
 
     /**
@@ -286,13 +247,13 @@ abstract public class VirtualView extends ReactViewGroup {
         return mCachedClipPath;
     }
 
-    @Nullable Path getClipPath(Canvas canvas, Paint paint) {
+    @Nullable Path getClipPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         if (mClipPath != null) {
             ClipPathView mClipNode = (ClipPathView) getSvgView().getDefinedClipPath(mClipPath);
 
             if (mClipNode != null) {
-                Path clipPath = mClipNode.mClipRule == CLIP_RULE_EVENODD ? mClipNode.getPath(canvas, paint) :
-                        mClipNode.getPath(canvas, paint, Region.Op.UNION);
+                Path clipPath = mClipNode.mClipRule == CLIP_RULE_EVENODD ? mClipNode.getPath(canvas, glyphContext, paint) :
+                        mClipNode.getPath(canvas, glyphContext, paint, Region.Op.UNION);
                 switch (mClipNode.mClipRule) {
                     case CLIP_RULE_EVENODD:
                         clipPath.setFillType(Path.FillType.EVEN_ODD);
@@ -311,8 +272,8 @@ abstract public class VirtualView extends ReactViewGroup {
         return getClipPath();
     }
 
-    void clip(Canvas canvas, Paint paint) {
-        Path clip = getClipPath(canvas, paint);
+    void clip(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
+        Path clip = getClipPath(canvas, glyphContext, paint);
 
         if (clip != null) {
             canvas.clipPath(clip);
@@ -325,7 +286,7 @@ abstract public class VirtualView extends ReactViewGroup {
         return mResponsible;
     }
 
-    abstract Path getPath(Canvas canvas, Paint paint);
+    abstract Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint);
 
     SvgView getSvgView() {
         if (svgView != null) {
@@ -347,34 +308,34 @@ abstract public class VirtualView extends ReactViewGroup {
         return svgView;
     }
 
-    double relativeOnWidth(SVGLength length) {
+    double relativeOnWidth(final GlyphContext glyphContext, final SVGLength length) {
         SVGLengthUnitType unit = length.unit;
         if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_NUMBER){
             return length.value * mScale;
         } else if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_PERCENTAGE){
-            return length.value / 100 * getCanvasWidth();
+            return length.value / 100 * getCanvasWidth(glyphContext);
         }
-        return fromRelativeFast(length);
+        return fromRelativeFast(glyphContext, length);
     }
 
-    double relativeOnHeight(SVGLength length) {
+    double relativeOnHeight(final GlyphContext glyphContext, final SVGLength length) {
         SVGLengthUnitType unit = length.unit;
         if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_NUMBER){
             return length.value * mScale;
         } else if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_PERCENTAGE){
-            return length.value / 100 * getCanvasHeight();
+            return length.value / 100 * getCanvasHeight(glyphContext);
         }
-        return fromRelativeFast(length);
+        return fromRelativeFast(glyphContext, length);
     }
 
-    double relativeOnOther(SVGLength length) {
+    double relativeOnOther(final GlyphContext glyphContext, final SVGLength length) {
         SVGLengthUnitType unit = length.unit;
         if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_NUMBER){
             return length.value * mScale;
         } else if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_PERCENTAGE){
-            return length.value / 100 * getCanvasDiagonal();
+            return length.value / 100 * getCanvasDiagonal(glyphContext);
         }
-        return fromRelativeFast(length);
+        return fromRelativeFast(glyphContext, length);
     }
 
     /**
@@ -384,14 +345,14 @@ abstract public class VirtualView extends ReactViewGroup {
      * @param length     length string
      * @return value in the current user coordinate system
      */
-    double fromRelativeFast(SVGLength length) {
+    double fromRelativeFast(final GlyphContext glyphContext, final SVGLength length) {
         double unit;
         switch (length.unit) {
             case SVG_LENGTHTYPE_EMS:
-                unit = getFontSizeFromContext();
+                unit = getFontSizeFromContext(glyphContext);
                 break;
             case SVG_LENGTHTYPE_EXS:
-                unit = getFontSizeFromContext() / 2;
+                unit = getFontSizeFromContext(glyphContext) / 2;
                 break;
 
             case SVG_LENGTHTYPE_CM:
@@ -416,40 +377,40 @@ abstract public class VirtualView extends ReactViewGroup {
         return length.value * unit * mScale;
     }
 
-    private float getCanvasWidth() {
+    private float getCanvasWidth(final GlyphContext glyphContext) {
         if (canvasWidth != -1) {
             return canvasWidth;
         }
-        GroupView root = getTextRoot();
-        if (root == null) {
+
+        if (glyphContext == null) {
             canvasWidth = getSvgView().getCanvasBounds().width();
         } else {
-            canvasWidth = root.getGlyphContext().getWidth();
+            canvasWidth = glyphContext.getWidth();
         }
 
         return canvasWidth;
     }
 
-    private float getCanvasHeight() {
+    private float getCanvasHeight(final GlyphContext glyphContext) {
         if (canvasHeight != -1) {
             return canvasHeight;
         }
-        GroupView root = getTextRoot();
-        if (root == null) {
+
+        if (glyphContext == null) {
             canvasHeight = getSvgView().getCanvasBounds().height();
         } else {
-            canvasHeight = root.getGlyphContext().getHeight();
+            canvasHeight = glyphContext.getHeight();
         }
 
         return canvasHeight;
     }
 
-    private double getCanvasDiagonal() {
+    private double getCanvasDiagonal(final GlyphContext glyphContext) {
         if (canvasDiagonal != -1) {
             return canvasDiagonal;
         }
-        double powX = Math.pow((getCanvasWidth()), 2);
-        double powY = Math.pow((getCanvasHeight()), 2);
+        double powX = Math.pow((getCanvasWidth(glyphContext)), 2);
+        double powY = Math.pow((getCanvasHeight(glyphContext)), 2);
         canvasDiagonal = Math.sqrt(powX + powY) * M_SQRT1_2l;
         return canvasDiagonal;
     }

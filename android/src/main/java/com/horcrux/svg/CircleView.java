@@ -48,12 +48,12 @@ class CircleView extends RenderableView {
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         Path path = new Path();
 
-        double cx = relativeOnWidth(mCx);
-        double cy = relativeOnHeight(mCy);
-        double r = relativeOnOther(mR);
+        double cx = relativeOnWidth(glyphContext, mCx);
+        double cy = relativeOnHeight(glyphContext, mCy);
+        double r = relativeOnOther(glyphContext, mR);
 
         path.addCircle((float) cx, (float) cy, (float) r, Path.Direction.CW);
         return path;

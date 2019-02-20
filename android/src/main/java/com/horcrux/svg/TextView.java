@@ -129,27 +129,27 @@ class TextView extends GroupView {
     }
 
     @Override
-    void draw(Canvas canvas, Paint paint, float opacity) {
+    void draw(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
         if (opacity > MIN_OPACITY_FOR_DRAW) {
             setupGlyphContext(canvas);
-            clip(canvas, paint);
-            getGroupPath(canvas, paint);
-            drawGroup(canvas, paint, opacity);
+            clip(canvas, glyphContext, paint);
+            getGroupPath(canvas, glyphContext, paint);
+            drawGroup(canvas, glyphContext, paint, opacity);
         }
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         if (mPath != null) {
             return mPath;
         }
-        setupGlyphContext(canvas);
-        return getGroupPath(canvas, paint);
+        final GlyphContext nextContext = setupGlyphContext(canvas);
+        return getGroupPath(canvas, nextContext, paint);
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint, Region.Op op) {
-        return getPath(canvas, paint);
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final Region.Op op) {
+        return getPath(canvas, glyphContext, paint);
     }
 
     AlignmentBaseline getAlignmentBaseline() {
@@ -191,20 +191,20 @@ class TextView extends GroupView {
         return mBaselineShift;
     }
 
-    Path getGroupPath(Canvas canvas, Paint paint) {
+    Path getGroupPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         if (mPath != null) {
             return mPath;
         }
-        pushGlyphContext();
-        mPath = super.getPath(canvas, paint);
-        popGlyphContext();
+        pushGlyphContext(glyphContext);
+        mPath = super.getPath(canvas, glyphContext, paint);
+        popGlyphContext(glyphContext);
 
         return mPath;
     }
 
     @Override
-    void pushGlyphContext() {
+    void pushGlyphContext(final GlyphContext glyphContext) {
         boolean isTextNode = !(this instanceof TextPathView) && !(this instanceof TSpanView);
-        getTextRootGlyphContext().pushContext(isTextNode, this, mFont, mPositionX, mPositionY, mDeltaX, mDeltaY, mRotate);
+        glyphContext.pushContext(isTextNode, this, mFont, mPositionX, mPositionY, mDeltaX, mDeltaY, mRotate);
     }
 }

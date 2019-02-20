@@ -24,7 +24,7 @@ class DefinitionView extends VirtualView {
     }
 
     @SuppressWarnings("EmptyMethod")
-    void draw(Canvas canvas, Paint paint, float opacity) {}
+    void draw(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {}
 
     @Override
     boolean isResponsible() {
@@ -32,7 +32,7 @@ class DefinitionView extends VirtualView {
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         return null;
     }
 

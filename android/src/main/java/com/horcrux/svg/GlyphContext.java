@@ -144,21 +144,22 @@ class GlyphContext {
     }
 
     private FontData getTopOrParentFont(GroupView child) {
-        if (mTop > 0) {
-            return topFont;
-        } else {
-            GroupView parentRoot = child.getParentTextRoot();
-
-            while (parentRoot != null) {
-                FontData map = parentRoot.getGlyphContext().getFont();
-                if (map != FontData.Defaults) {
-                    return map;
-                }
-                parentRoot = parentRoot.getParentTextRoot();
-            }
-
-            return FontData.Defaults;
-        }
+        return topFont;
+//        if (mTop > 0) {
+//            return topFont;
+//        } else {
+//            GroupView parentRoot = child.getParentTextRoot();
+//
+//            while (parentRoot != null) {
+//                FontData map = parentRoot.getGlyphContext(this).getFont();
+//                if (map != FontData.Defaults) {
+//                    return map;
+//                }
+//                parentRoot = parentRoot.getParentTextRoot();
+//            }
+//
+//            return FontData.Defaults;
+//        }
     }
 
     private void pushNodeAndFont(GroupView node, @Nullable ReadableMap font) {
@@ -174,7 +175,6 @@ class GlyphContext {
         mFontSize = data.fontSize;
         mFontContext.add(data);
         topFont = data;
-
     }
 
     void pushContext(GroupView node, @Nullable ReadableMap font) {
@@ -261,6 +261,11 @@ class GlyphContext {
     }
 
     void popContext() {
+        if (mTop <= 0) {
+            // We can't really pop beyond the base context level.
+            return;
+        }
+
         mFontContext.remove(mTop);
         mXsIndices.remove(mTop);
         mYsIndices.remove(mTop);

@@ -24,7 +24,7 @@ class DefsView extends DefinitionView {
     }
 
     @Override
-    void draw(Canvas canvas, Paint paint, float opacity) {}
+    void draw(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {}
 
     void saveDefinition() {
         for (int i = 0; i < getChildCount(); i++) {

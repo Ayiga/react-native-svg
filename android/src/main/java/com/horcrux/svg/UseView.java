@@ -63,23 +63,23 @@ class UseView extends RenderableView {
     }
 
     @Override
-    void draw(Canvas canvas, Paint paint, float opacity) {
+    void draw(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
         VirtualView template = getSvgView().getDefinedTemplate(mHref);
 
         if (template != null) {
-            canvas.translate((float) relativeOnWidth(mX), (float) relativeOnHeight(mY));
+            canvas.translate((float) relativeOnWidth(glyphContext, mX), (float) relativeOnHeight(glyphContext, mY));
             if (template instanceof RenderableView) {
                 ((RenderableView)template).mergeProperties(this);
             }
 
             int count = template.saveAndSetupCanvas(canvas);
-            clip(canvas, paint);
+            clip(canvas, glyphContext, paint);
 
             if (template instanceof SymbolView) {
                 SymbolView symbol = (SymbolView)template;
-                symbol.drawSymbol(canvas, paint, opacity, (float) relativeOnWidth(mW), (float) relativeOnHeight(mH));
+                symbol.drawSymbol(canvas, glyphContext, paint, opacity, (float) relativeOnWidth(glyphContext, mW), (float) relativeOnHeight(glyphContext, mH));
             } else {
-                template.draw(canvas, paint, opacity * mOpacity);
+                template.draw(canvas, glyphContext, paint, opacity * mOpacity);
             }
 
             this.setClientRect(template.getClientRect());
@@ -114,7 +114,7 @@ class UseView extends RenderableView {
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         // todo:
         return new Path();
     }

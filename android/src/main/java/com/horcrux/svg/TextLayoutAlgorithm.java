@@ -990,7 +990,7 @@ class TextLayoutAlgorithm {
 */
             final TextPathView textPathView = inTextPath.get(index);
             if (textPathView != null && result[index].addressable) {
-                textPath = textPathView.getTextPath(null, null);
+                textPath = textPathView.getTextPath(null, null, null);
                 inPath = true;
 /*
 

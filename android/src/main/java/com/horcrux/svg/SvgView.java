@@ -229,8 +229,7 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
                 (int) width,
                 (int) height,
                 Bitmap.Config.ARGB_8888);
-
-        drawChildren(new Canvas(bitmap));
+        drawChildren(new Canvas(bitmap), new GlyphContext(1f, width, height));
         return bitmap;
     }
 
@@ -238,7 +237,7 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
         return mCanvas.getClipBounds();
     }
 
-    void drawChildren(final Canvas canvas) {
+    void drawChildren(final Canvas canvas, final GlyphContext glyphContext) {
         mRendered = true;
         mCanvas = canvas;
         if (mAlign != null) {
@@ -278,7 +277,7 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
             if (lNode instanceof VirtualView) {
                 VirtualView node = (VirtualView)lNode;
                 int count = node.saveAndSetupCanvas(canvas);
-                node.render(canvas, paint, 1f);
+                node.render(canvas, glyphContext, paint, 1f);
                 node.restoreCanvas(canvas, count);
 
                 if (node.isResponsible() && !mResponsible) {
@@ -293,12 +292,14 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
     }
 
     String toDataURL() {
+        int width = getWidth();
+        int height = getHeight();
         Bitmap bitmap = Bitmap.createBitmap(
-                getWidth(),
-                getHeight(),
+                width,
+                height,
                 Bitmap.Config.ARGB_8888);
 
-        drawChildren(new Canvas(bitmap));
+        drawChildren(new Canvas(bitmap), new GlyphContext(1f, width, height));
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         bitmap.recycle();

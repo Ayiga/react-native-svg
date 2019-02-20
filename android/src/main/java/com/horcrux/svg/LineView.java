@@ -54,12 +54,12 @@ class LineView extends RenderableView {
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         Path path = new Path();
-        double x1 = relativeOnWidth(mX1);
-        double y1 = relativeOnHeight(mY1);
-        double x2 = relativeOnWidth(mX2);
-        double y2 = relativeOnHeight(mY2);
+        double x1 = relativeOnWidth(glyphContext, mX1);
+        double y1 = relativeOnHeight(glyphContext, mY1);
+        double x2 = relativeOnWidth(glyphContext, mX2);
+        double y2 = relativeOnHeight(glyphContext, mY2);
 
         path.moveTo((float) x1, (float) y1);
         path.lineTo((float) x2, (float) y2);

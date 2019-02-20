@@ -69,14 +69,14 @@ class RectView extends RenderableView {
     }
 
     @Override
-    Path getPath(Canvas canvas, Paint paint) {
+    Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint) {
         Path path = new Path();
-        double x = relativeOnWidth(mX);
-        double y = relativeOnHeight(mY);
-        double w = relativeOnWidth(mW);
-        double h = relativeOnHeight(mH);
-        double rx = relativeOnWidth(mRx);
-        double ry = relativeOnHeight(mRy);
+        double x = relativeOnWidth(glyphContext, mX);
+        double y = relativeOnHeight(glyphContext, mY);
+        double w = relativeOnWidth(glyphContext, mW);
+        double h = relativeOnHeight(glyphContext, mH);
+        double rx = relativeOnWidth(glyphContext, mRx);
+        double ry = relativeOnHeight(glyphContext, mRy);
 
         if (rx != 0 || ry != 0) {
             if (rx == 0) {

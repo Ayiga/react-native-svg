@@ -247,7 +247,7 @@ abstract public class RenderableView extends VirtualView {
         return v <= 0 ? 0 : (v >= 1 ? 1 : v);
     }
 
-    void render(Canvas canvas, Paint paint, float opacity) {
+    void render(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
         MaskView mask = null;
         if (mMask != null) {
             SvgView root = getSvgView();
@@ -267,14 +267,14 @@ abstract public class RenderableView extends VirtualView {
             Canvas resultCanvas = new Canvas(result);
 
             // Clip to mask bounds and render the mask
-            float maskX = (float) relativeOnWidth(mask.mX);
-            float maskY = (float) relativeOnWidth(mask.mY);
-            float maskWidth = (float) relativeOnWidth(mask.mW);
-            float maskHeight = (float) relativeOnWidth(mask.mH);
+            float maskX = (float) relativeOnWidth(glyphContext, mask.mX);
+            float maskY = (float) relativeOnWidth(glyphContext, mask.mY);
+            float maskWidth = (float) relativeOnWidth(glyphContext, mask.mW);
+            float maskHeight = (float) relativeOnWidth(glyphContext, mask.mH);
             maskCanvas.clipRect(maskX, maskY, maskWidth, maskHeight);
 
             Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            mask.draw(maskCanvas, maskPaint, 1);
+            mask.draw(maskCanvas, glyphContext, maskPaint, 1);
 
             // Apply luminanceToAlpha filter primitive https://www.w3.org/TR/SVG11/filters.html#feColorMatrixElement
             int nPixels = width * height;
@@ -298,7 +298,7 @@ abstract public class RenderableView extends VirtualView {
             maskBitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
             // Render content of current SVG Renderable to image
-            draw(originalCanvas, paint, opacity);
+            draw(originalCanvas, glyphContext, paint, opacity);
 
             // Blend current element and mask
             maskPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
@@ -308,18 +308,18 @@ abstract public class RenderableView extends VirtualView {
             // Render composited result into current render context
             canvas.drawBitmap(result, 0, 0, paint);
         } else {
-            draw(canvas, paint, opacity);
+            draw(canvas, glyphContext, paint, opacity);
         }
     }
 
     @Override
-    void draw(Canvas canvas, Paint paint, float opacity) {
-        opacity *= mOpacity;
+    void draw(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity) {
+        final float nextOpacity = mOpacity * opacity;
 
-        if (opacity > MIN_OPACITY_FOR_DRAW) {
+        if (nextOpacity > MIN_OPACITY_FOR_DRAW) {
             boolean computePaths = mPath == null;
             if (computePaths) {
-                mPath = getPath(canvas, paint);
+                mPath = getPath(canvas, glyphContext, paint);
                 mPath.setFillType(fillRule);
             }
             Path path = mPath;
@@ -334,16 +334,16 @@ abstract public class RenderableView extends VirtualView {
             svgToViewMatrix.mapRect(clientRect);
             this.setClientRect(clientRect);
 
-            clip(canvas, paint);
+            clip(canvas, glyphContext, paint);
 
-            if (setupFillPaint(paint, opacity * fillOpacity)) {
+            if (setupFillPaint(paint, nextOpacity * fillOpacity)) {
                 if (computePaths) {
                     mFillPath = new Path();
                     paint.getFillPath(path, mFillPath);
                 }
                 canvas.drawPath(path, paint);
             }
-            if (setupStrokePaint(paint, opacity * strokeOpacity)) {
+            if (setupStrokePaint(glyphContext, paint, nextOpacity * strokeOpacity)) {
                 if (computePaths) {
                     mStrokePath = new Path();
                     paint.getFillPath(path, mStrokePath);
@@ -372,9 +372,9 @@ abstract public class RenderableView extends VirtualView {
      * Sets up paint according to the props set on a view. Returns {@code true}
      * if the stroke should be drawn, {@code false} if not.
      */
-    private boolean setupStrokePaint(Paint paint, float opacity) {
+    private boolean setupStrokePaint(final GlyphContext glyphContext, final Paint paint, final float opacity) {
         paint.reset();
-        double strokeWidth = relativeOnOther(this.strokeWidth);
+        double strokeWidth = relativeOnOther(glyphContext, this.strokeWidth);
         if (strokeWidth == 0 || stroke == null || stroke.size() == 0) {
             return false;
         }
@@ -391,7 +391,7 @@ abstract public class RenderableView extends VirtualView {
             int length = strokeDasharray.length;
             float[] intervals = new float[length];
             for (int i = 0; i < length; i++) {
-                intervals[i] = (float)relativeOnOther(strokeDasharray[i]);
+                intervals[i] = (float)relativeOnOther(glyphContext, strokeDasharray[i]);
             }
             paint.setPathEffect(new DashPathEffect(intervals, strokeDashoffset));
         }
@@ -433,7 +433,7 @@ abstract public class RenderableView extends VirtualView {
 
     }
 
-    abstract Path getPath(Canvas canvas, Paint paint);
+    abstract Path getPath(final Canvas canvas, final GlyphContext glyphContext, final Paint paint);
 
     @Override
     int hitTest(final float[] src) {
@@ -506,18 +506,18 @@ abstract public class RenderableView extends VirtualView {
             return;
         }
 
-        mOriginProperties = new ArrayList<>();
-        mAttributeList = mPropList == null ? new ArrayList<String>() : new ArrayList<>(mPropList);
+        final ArrayList<Object> nextPropertiesList = new ArrayList<>();
+        final ArrayList<String> nextAttributeList = mPropList == null ? new ArrayList<String>() : new ArrayList<>(mPropList);
 
         for (int i = 0, size = targetAttributeList.size(); i < size; i++) {
             try {
                 String fieldName = targetAttributeList.get(i);
                 Field field = getClass().getField(fieldName);
                 Object value = field.get(target);
-                mOriginProperties.add(field.get(this));
+                nextPropertiesList.add(field.get(this));
 
                 if (!hasOwnProperty(fieldName)) {
-                    mAttributeList.add(fieldName);
+                    nextAttributeList.add(fieldName);
                     field.set(this, value);
                 }
             } catch (Exception e) {
@@ -525,15 +525,20 @@ abstract public class RenderableView extends VirtualView {
             }
         }
 
+        mAttributeList = nextAttributeList;
+        mOriginProperties = nextPropertiesList;
         mLastMergedList = targetAttributeList;
     }
 
     void resetProperties() {
-        if (mLastMergedList != null && mOriginProperties != null) {
+        final ArrayList<String> mergedList = mLastMergedList;
+        final ArrayList<Object> properties = mOriginProperties;
+        final ArrayList<String> propList = mPropList;
+        if (mergedList != null && properties != null) {
             try {
-                for (int i = mLastMergedList.size() - 1; i >= 0; i--) {
-                    Field field = getClass().getField(mLastMergedList.get(i));
-                    field.set(this, mOriginProperties.get(i));
+                for (int i = mergedList.size() - 1; i >= 0; i--) {
+                    Field field = getClass().getField(mergedList.get(i));
+                    field.set(this, properties.get(i));
                 }
             } catch (Exception e) {
                 throw new IllegalStateException(e);
@@ -541,7 +546,7 @@ abstract public class RenderableView extends VirtualView {
 
             mLastMergedList = null;
             mOriginProperties = null;
-            mAttributeList = mPropList;
+            mAttributeList = propList;
         }
     }
 
