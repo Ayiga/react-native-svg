@@ -914,7 +914,21 @@ class TSpanView extends TextView {
 
         double fontSize = font.fontSize * 1f;
 
-        boolean isBold = font.fontWeight == FontWeight.Bold;
+
+        boolean isBold;
+        switch (font.fontWeight) {
+            case Bold:
+            case Bolder:
+            case w700:
+            case w800:
+            case w900:
+                isBold = true;
+                break;
+            default:
+                isBold = false;
+                break;
+        }
+
         boolean isItalic = font.fontStyle == FontStyle.italic;
 
         /*
