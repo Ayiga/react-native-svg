@@ -171,7 +171,7 @@ class GlyphContext {
             return;
         }
 
-        FontData data = new FontData(font, parent, mScale);
+        FontData data = new FontData(font, parent, 1f);
         mFontSize = data.fontSize;
         mFontContext.add(data);
         topFont = data;
@@ -365,7 +365,7 @@ class GlyphContext {
             mDX = 0;
             mXIndex = nextIndex;
             SVGLength string = mXs[nextIndex];
-            mX = PropHelper.fromRelative(string, mWidth, 0, mScale, mFontSize);
+            mX = PropHelper.fromRelative(string, mWidth, 0, 1f, mFontSize);
         }
 
         mX += advance;
@@ -381,7 +381,7 @@ class GlyphContext {
             mDY = 0;
             mYIndex = nextIndex;
             SVGLength string = mYs[nextIndex];
-            mY = PropHelper.fromRelative(string, mHeight, 0, mScale, mFontSize);
+            mY = PropHelper.fromRelative(string, mHeight, 0, 1f, mFontSize);
         }
 
         return mY;
@@ -394,7 +394,7 @@ class GlyphContext {
         if (nextIndex < mDXs.length) {
             mDXIndex = nextIndex;
             SVGLength string = mDXs[nextIndex];
-            double val = PropHelper.fromRelative(string, mWidth, 0, mScale, mFontSize);
+            double val = PropHelper.fromRelative(string, mWidth, 0, 1f, mFontSize);
             mDX += val;
         }
 
@@ -408,7 +408,7 @@ class GlyphContext {
         if (nextIndex < mDYs.length) {
             mDYIndex = nextIndex;
             SVGLength string = mDYs[nextIndex];
-            double val = PropHelper.fromRelative(string, mHeight, 0, mScale, mFontSize);
+            double val = PropHelper.fromRelative(string, mHeight, 0, 1f, mFontSize);
             mDY += val;
         }
 

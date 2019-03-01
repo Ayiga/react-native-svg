@@ -43,4 +43,25 @@ RCT_EXPORT_METHOD(toDataURL:(nonnull NSNumber *)reactTag callback:(RCTResponseSe
     }];
 }
 
+RCT_EXPORT_METHOD(toDataURLWithOptions:(nonnull NSNumber *)reactTag options:(nonnull NSDictionary *)options callback:(RCTResponseSenderBlock)callback)
+{
+    CGFloat width = [options[@"width"] floatValue];
+    CGFloat height = [options[@"height"] floatValue];
+    CGFloat scale = [options[@"scale"] floatValue];
+    
+    if (scale < 0) {
+        scale = 1;
+    }
+    
+    [self.bridge.uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+        __kindof UIView *view = viewRegistry[reactTag];
+        if ([view isKindOfClass:[RNSVGSvgView class]]) {
+            RNSVGSvgView *svg = view;
+            callback(@[[svg getDataURLWithRect:CGRectMake(0, 0, width, height) withScale:scale]]);
+        } else {
+            RCTLogError(@"Invalid svg returned frin registry, expecting RNSVGSvgView, got: %@", view);
+        }
+    }];
+}
+
 @end

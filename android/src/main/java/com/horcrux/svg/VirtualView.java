@@ -36,7 +36,7 @@ abstract public class VirtualView extends ReactViewGroup {
     VirtualView(ReactContext reactContext) {
         super(reactContext);
         mContext = reactContext;
-        mScale = DisplayMetricsHolder.getScreenDisplayMetrics().density;
+//        mScale = DisplayMetricsHolder.getScreenDisplayMetrics().density;
     }
 
     /*
@@ -69,7 +69,7 @@ abstract public class VirtualView extends ReactViewGroup {
     private static final int CLIP_RULE_EVENODD = 0;
     static final int CLIP_RULE_NONZERO = 1;
 
-    final float mScale;
+//    final float mScale;
     private boolean mResponsible;
     String mName;
 
@@ -216,7 +216,7 @@ abstract public class VirtualView extends ReactViewGroup {
     public void setMatrix(Dynamic matrixArray) {
         ReadableType type = matrixArray.getType();
         if (!matrixArray.isNull() && type.equals(ReadableType.Array)) {
-            int matrixSize = PropHelper.toMatrixData(matrixArray.asArray(), sRawMatrix, mScale);
+            int matrixSize = PropHelper.toMatrixData(matrixArray.asArray(), sRawMatrix, 1f);
             if (matrixSize == 6) {
                 if (mMatrix == null) {
                     mMatrix = new Matrix();
@@ -311,7 +311,7 @@ abstract public class VirtualView extends ReactViewGroup {
     double relativeOnWidth(final GlyphContext glyphContext, final SVGLength length) {
         SVGLengthUnitType unit = length.unit;
         if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_NUMBER){
-            return length.value * mScale;
+            return length.value * 1f;
         } else if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_PERCENTAGE){
             return length.value / 100 * getCanvasWidth(glyphContext);
         }
@@ -321,7 +321,7 @@ abstract public class VirtualView extends ReactViewGroup {
     double relativeOnHeight(final GlyphContext glyphContext, final SVGLength length) {
         SVGLengthUnitType unit = length.unit;
         if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_NUMBER){
-            return length.value * mScale;
+            return length.value * 1f;
         } else if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_PERCENTAGE){
             return length.value / 100 * getCanvasHeight(glyphContext);
         }
@@ -331,7 +331,7 @@ abstract public class VirtualView extends ReactViewGroup {
     double relativeOnOther(final GlyphContext glyphContext, final SVGLength length) {
         SVGLengthUnitType unit = length.unit;
         if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_NUMBER){
-            return length.value * mScale;
+            return length.value * 1f;
         } else if (unit == SVGLengthUnitType.SVG_LENGTHTYPE_PERCENTAGE){
             return length.value / 100 * getCanvasDiagonal(glyphContext);
         }
@@ -374,7 +374,7 @@ abstract public class VirtualView extends ReactViewGroup {
             default:
                 unit = 1;
         }
-        return length.value * unit * mScale;
+        return length.value * unit * 1f;
     }
 
     private float getCanvasWidth(final GlyphContext glyphContext) {

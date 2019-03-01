@@ -252,7 +252,18 @@
 {
     UIGraphicsBeginImageContextWithOptions(_boundingBox.size, NO, 0);
     [self drawRect:_boundingBox];
-    NSData *imageData = UIImagePNGRepresentation(UIGraphicsGetImageFromCurrentImageContext());
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    NSData *imageData = UIImagePNGRepresentation(image);
+    NSString *base64 = [imageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+    UIGraphicsEndImageContext();
+    return base64;
+}
+
+- (NSString *)getDataURLWithRect:(CGRect)rect withScale:(CGFloat)scale {
+    UIGraphicsBeginImageContextWithOptions(rect.size, NO, scale);
+    [self drawRect:rect];
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    NSData *imageData = UIImagePNGRepresentation(image);
     NSString *base64 = [imageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
     UIGraphicsEndImageContext();
     return base64;

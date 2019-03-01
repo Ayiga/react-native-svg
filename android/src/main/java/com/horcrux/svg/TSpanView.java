@@ -473,7 +473,7 @@ class TSpanView extends TextView {
         */
         double scaleSpacingAndGlyphs = 1;
         if (mTextLength != null) {
-            final double author = PropHelper.fromRelative(mTextLength, canvas.getWidth(), 0, mScale, fontSize);
+            final double author = PropHelper.fromRelative(mTextLength, canvas.getWidth(), 0, 1f, fontSize);
             if (author < 0) {
                 throw new IllegalArgumentException("Negative textLength value");
             }
@@ -655,7 +655,7 @@ class TSpanView extends TextView {
                                     ReadableMap os2 = tables.getMap("os2");
                                     if (os2.hasKey("ySubscriptYOffset")) {
                                         double subOffset = os2.getDouble("ySubscriptYOffset");
-                                        baselineShift += mScale * fontSize * subOffset / unitsPerEm;
+                                        baselineShift += 1f * fontSize * subOffset / unitsPerEm;
                                     }
                                 }
                             }
@@ -670,7 +670,7 @@ class TSpanView extends TextView {
                                     ReadableMap os2 = tables.getMap("os2");
                                     if (os2.hasKey("ySuperscriptYOffset")) {
                                         double superOffset = os2.getDouble("ySuperscriptYOffset");
-                                        baselineShift -= mScale * fontSize * superOffset / unitsPerEm;
+                                        baselineShift -= 1f * fontSize * superOffset / unitsPerEm;
                                     }
                                 }
                             }
@@ -680,7 +680,7 @@ class TSpanView extends TextView {
                             break;
 
                         default:
-                            baselineShift -= PropHelper.fromRelative(baselineShiftString, mScale * fontSize, 0, mScale, fontSize);
+                            baselineShift -= PropHelper.fromRelative(baselineShiftString, 1f * fontSize, 0, 1f, fontSize);
                     }
                     break;
             }
@@ -892,7 +892,7 @@ class TSpanView extends TextView {
     }
 
     private double getAbsoluteStartOffset(SVGLength startOffset, double distance, double fontSize) {
-        return PropHelper.fromRelative(startOffset, distance, 0, mScale, fontSize);
+        return PropHelper.fromRelative(startOffset, distance, 0, 1f, fontSize);
     }
 
     private double getTextAnchorOffset(TextAnchor textAnchor, double textMeasure) {
@@ -912,7 +912,7 @@ class TSpanView extends TextView {
     private void applyTextPropertiesToPaint(Paint paint, FontData font) {
         AssetManager assetManager = mContext.getResources().getAssets();
 
-        double fontSize = font.fontSize * mScale;
+        double fontSize = font.fontSize * 1f;
 
         boolean isBold = font.fontWeight == FontWeight.Bold;
         boolean isItalic = font.fontStyle == FontStyle.italic;

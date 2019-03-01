@@ -51,6 +51,7 @@
 - (RNSVGNode *)getDefinedMask:(NSString *)maskName;
 
 - (NSString *)getDataURL;
+- (NSString *)getDataURLWithRect:(CGRect)rect withScale:(CGFloat)scale;
 
 - (CGRect)getContextBounds;
 

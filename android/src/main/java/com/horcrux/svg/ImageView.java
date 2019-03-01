@@ -173,10 +173,10 @@ class ImageView extends RenderableView {
         double w = relativeOnWidth(glyphContext, mW);
         double h = relativeOnHeight(glyphContext, mH);
         if (w == 0) {
-            w = mImageWidth * mScale;
+            w = mImageWidth * 1f;
         }
         if (h == 0) {
-            h = mImageHeight * mScale;
+            h = mImageHeight * 1f;
         }
 
         return new RectF((float) x, (float) y, (float) (x + w), (float) (y + h));

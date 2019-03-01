@@ -103,7 +103,7 @@ class PatternView extends GroupView {
     @ReactProp(name = "patternTransform")
     public void setPatternTransform(@Nullable ReadableArray matrixArray) {
         if (matrixArray != null) {
-            int matrixSize = PropHelper.toMatrixData(matrixArray, sRawMatrix, mScale);
+            int matrixSize = PropHelper.toMatrixData(matrixArray, sRawMatrix, 1f);
             if (matrixSize == 6) {
                 if (mMatrix == null) {
                     mMatrix = new Matrix();
@@ -157,7 +157,7 @@ class PatternView extends GroupView {
 
 
     RectF getViewBox() {
-        return new RectF(mMinX * mScale, mMinY * mScale, (mMinX + mVbWidth) * mScale, (mMinY + mVbHeight) * mScale);
+        return new RectF(mMinX * 1f, mMinY * 1f, (mMinX + mVbWidth) * 1f, (mMinY + mVbHeight) * 1f);
     }
 
     @Override

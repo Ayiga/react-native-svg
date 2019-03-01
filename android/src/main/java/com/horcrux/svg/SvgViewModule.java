@@ -27,11 +27,24 @@ class SvgViewModule extends ReactContextBaseJavaModule {
 
 
     @ReactMethod
-    public void toDataURL(int tag, final Callback successCallback) {
+    public void toDataURL(final int tag, final Callback successCallback) {
         SvgView svg = SvgViewManager.getSvgViewByTag(tag);
 
         if (svg != null) {
             successCallback.invoke(svg.toDataURL());
+        }
+    }
+
+    @ReactMethod
+    public void toDataURLWithOptions(final int tag, final ReadableMap options, final Callback successCallback) {
+        SvgView svg = SvgViewManager.getSvgViewByTag(tag);
+
+        if (svg != null) {
+            successCallback.invoke(svg.toDataURL(
+                options.getInt("width"),
+                options.getInt("height"),
+                (float) options.getDouble("scale")
+            ));
         }
     }
 }

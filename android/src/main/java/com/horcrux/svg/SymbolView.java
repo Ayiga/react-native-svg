@@ -75,7 +75,7 @@ class SymbolView extends GroupView {
 
     void drawSymbol(final Canvas canvas, final GlyphContext glyphContext, final Paint paint, final float opacity, final float width, final float height) {
         if (mAlign != null) {
-            RectF vbRect = new RectF(mMinX * mScale, mMinY * mScale, (mMinX + mVbWidth) * mScale, (mMinY + mVbHeight) * mScale);
+            RectF vbRect = new RectF(mMinX * 1f, mMinY * 1f, (mMinX + mVbWidth) * 1f, (mMinY + mVbHeight) * 1f);
             RectF eRect = new RectF(0, 0, width, height);
             Matrix viewBoxMatrix = ViewBox.getTransform(vbRect, eRect, mAlign, mMeetOrSlice);
             canvas.concat(viewBoxMatrix);

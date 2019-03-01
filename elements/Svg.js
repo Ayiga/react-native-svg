@@ -49,9 +49,22 @@ export default class Svg extends Shape {
     this.root.setNativeProps(props);
   };
 
-  toDataURL = callback => {
-    callback &&
-      RNSVGSvgViewManager.toDataURL(findNodeHandle(this.root), callback);
+  toDataURL = (callback, options) => {
+    if (!callback) {
+      return;
+    }
+
+    const handle = findNodeHandle(this.root);
+    if (!handle) {
+      return;
+    }
+
+    if (options) {
+      RNSVGSvgViewManager.toDataURLWithOptions(handle, options, callback);
+      return;
+    }
+
+    RNSVGSvgViewManager.toDataURL(handle, callback);
   };
 
   render() {

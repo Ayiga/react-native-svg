@@ -27,7 +27,7 @@ class PathView extends RenderableView {
 
     @ReactProp(name = "d")
     public void setD(String d) {
-        PropHelper.PathParser mD = new PropHelper.PathParser(d, mScale);
+        PropHelper.PathParser mD = new PropHelper.PathParser(d, 1f);
         mPath = mD.getPath();
         invalidate();
     }

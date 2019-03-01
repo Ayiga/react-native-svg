@@ -177,7 +177,7 @@ abstract public class RenderableView extends VirtualView {
 
     @ReactProp(name = "strokeDashoffset")
     public void setStrokeDashoffset(float strokeDashoffset) {
-        this.strokeDashoffset = strokeDashoffset * mScale;
+        this.strokeDashoffset = strokeDashoffset * 1f;
         invalidate();
     }
 
@@ -383,7 +383,7 @@ abstract public class RenderableView extends VirtualView {
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeCap(strokeLinecap);
         paint.setStrokeJoin(strokeLinejoin);
-        paint.setStrokeMiter(strokeMiterlimit * mScale);
+        paint.setStrokeMiter(strokeMiterlimit * 1f);
         paint.setStrokeWidth((float) strokeWidth);
         setupPaint(paint, opacity, stroke);
 
@@ -420,7 +420,7 @@ abstract public class RenderableView extends VirtualView {
             case 1: {
                 Brush brush = getSvgView().getDefinedBrush(colors.getString(1));
                 if (brush != null) {
-                    brush.setupPaint(paint, mBox, mScale, opacity);
+                    brush.setupPaint(paint, mBox, 1f, opacity);
                 }
                 break;
             }

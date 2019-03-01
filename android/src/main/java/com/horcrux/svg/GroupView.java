@@ -49,7 +49,7 @@ class GroupView extends RenderableView {
         if (mTransform != null) {
             mTransform.mapRect(clipBounds);
         }
-        return new GlyphContext(mScale, clipBounds.width(), clipBounds.height());
+        return new GlyphContext(1f, clipBounds.width(), clipBounds.height());
     }
 
     void pushGlyphContext(GlyphContext glyphContext) {

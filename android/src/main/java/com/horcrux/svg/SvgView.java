@@ -65,7 +65,7 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
 
     public SvgView(ReactContext reactContext) {
         super(reactContext);
-        mScale = DisplayMetricsHolder.getScreenDisplayMetrics().density;
+//        mScale = DisplayMetricsHolder.getScreenDisplayMetrics().density;
     }
 
     @Override
@@ -123,7 +123,7 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
     private final Map<String, VirtualView> mDefinedMasks = new HashMap<>();
     private final Map<String, Brush> mDefinedBrushes = new HashMap<>();
     private Canvas mCanvas;
-    private final float mScale;
+//    private final float mScale;
 
     private float mMinX;
     private float mMinY;
@@ -219,17 +219,31 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
 
     private Bitmap drawOutput() {
         mRendered = true;
-        float width = getWidth();
-        float height = getHeight();
+        final float scale = DisplayMetricsHolder.getScreenDisplayMetrics().density;
+        final float width = getWidth() / scale;
+        final float height = getHeight() / scale;
         boolean invalid = Float.isNaN(width) || Float.isNaN(height) || width < 1 || height < 1 || (Math.log10(width) + Math.log10(height) > 42);
         if (invalid) {
             return null;
         }
-        Bitmap bitmap = Bitmap.createBitmap(
-                (int) width,
-                (int) height,
+
+        final Matrix m = new Matrix();
+        m.setScale(scale, scale);
+//        final Matrix i = new Matrix();
+//        m.invert(i);
+        final RectF src = new RectF(0, 0, width, height);
+        final RectF dst = new RectF(0, 0, 0, 0);
+
+        m.mapRect(dst, src);
+
+
+        final Bitmap bitmap = Bitmap.createBitmap(
+                (int) dst.width(),
+                (int) dst.height(),
                 Bitmap.Config.ARGB_8888);
-        drawChildren(new Canvas(bitmap), new GlyphContext(1f, width, height));
+        final Canvas canvas = new Canvas(bitmap);
+        canvas.concat(m);
+        drawChildren(canvas, new GlyphContext(1f, width, height));
         return bitmap;
     }
 
@@ -246,8 +260,8 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
             float height = canvas.getHeight();
             boolean nested = getParent() instanceof VirtualView;
             if (nested) {
-                width = (float) PropHelper.fromRelative(mbbWidth, width, 0f, mScale, 12);
-                height = (float) PropHelper.fromRelative(mbbHeight, height, 0f, mScale, 12);
+                width = (float) PropHelper.fromRelative(mbbWidth, width, 0f, 1f, 12);
+                height = (float) PropHelper.fromRelative(mbbHeight, height, 0f, 1f, 12);
             }
             RectF eRect = new RectF(0,0, width, height);
             if (nested) {
@@ -288,18 +302,68 @@ public class SvgView extends ReactViewGroup implements ReactCompoundView, ReactC
     }
 
     private RectF getViewBox() {
-        return new RectF(mMinX * mScale, mMinY * mScale, (mMinX + mVbWidth) * mScale, (mMinY + mVbHeight) * mScale);
+        return new RectF(mMinX * 1f, mMinY * 1f, (mMinX + mVbWidth) * 1f, (mMinY + mVbHeight) * 1f);
     }
 
     String toDataURL() {
-        int width = getWidth();
-        int height = getHeight();
+        final float scale = DisplayMetricsHolder.getScreenDisplayMetrics().density;
+        final int width = (int) ((float) getWidth() / scale);
+        final int height = (int) ((float) getHeight() / scale);
+
+        final Matrix m = new Matrix();
+        m.setScale(scale, scale);
+//        final Matrix i = new Matrix();
+//        m.invert(i);
+        final RectF src = new RectF(0, 0, width, height);
+        final RectF dst = new RectF(0, 0, 0, 0);
+
+        m.mapRect(dst, src);
+
         Bitmap bitmap = Bitmap.createBitmap(
-                width,
-                height,
+                (int) dst.width(),
+                (int) dst.height(),
                 Bitmap.Config.ARGB_8888);
 
-        drawChildren(new Canvas(bitmap), new GlyphContext(1f, width, height));
+        final Canvas canvas = new Canvas(bitmap);
+        canvas.concat(m);
+
+        final GlyphContext ctx = new GlyphContext(1f, width, height);
+
+        drawChildren(canvas, ctx);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        bitmap.recycle();
+        byte[] bitmapBytes = stream.toByteArray();
+        return Base64.encodeToString(bitmapBytes, Base64.DEFAULT);
+    }
+
+    String toDataURL(final int width, final int height, final float scale) {
+        final Matrix m = new Matrix();
+        final float finalScale;
+        if (scale < 0) {
+            finalScale = 1;
+        } else if (scale == 0) {
+            finalScale = DisplayMetricsHolder.getScreenDisplayMetrics().density;
+        } else {
+            finalScale = scale;
+        }
+        m.setScale(finalScale, finalScale);
+        final RectF src = new RectF(0, 0, width, height);
+        final RectF dst = new RectF(0, 0, 0, 0);
+
+        m.mapRect(dst, src);
+
+        Bitmap bitmap = Bitmap.createBitmap(
+                (int) dst.width(),
+                (int) dst.height(),
+                Bitmap.Config.ARGB_8888);
+
+        final Canvas canvas = new Canvas(bitmap);
+        canvas.concat(m);
+
+        final GlyphContext ctx = new GlyphContext(1f, width, height);
+
+        drawChildren(canvas, ctx);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         bitmap.recycle();

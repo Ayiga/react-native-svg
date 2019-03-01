@@ -99,7 +99,7 @@ class MaskView extends GroupView {
     @ReactProp(name = "maskTransform")
     public void setMaskTransform(@Nullable ReadableArray matrixArray) {
         if (matrixArray != null) {
-            int matrixSize = PropHelper.toMatrixData(matrixArray, sRawMatrix, mScale);
+            int matrixSize = PropHelper.toMatrixData(matrixArray, sRawMatrix, 1f);
             if (matrixSize == 6) {
                 if (mMatrix == null) {
                     mMatrix = new Matrix();

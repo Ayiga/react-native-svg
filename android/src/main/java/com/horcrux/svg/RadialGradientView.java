@@ -101,7 +101,7 @@ class RadialGradientView extends DefinitionView {
     @ReactProp(name = "gradientTransform")
     public void setGradientTransform(@Nullable ReadableArray matrixArray) {
         if (matrixArray != null) {
-            int matrixSize = PropHelper.toMatrixData(matrixArray, sRawMatrix, mScale);
+            int matrixSize = PropHelper.toMatrixData(matrixArray, sRawMatrix, 1f);
             if (matrixSize == 6) {
                 if (mMatrix == null) {
                     mMatrix = new Matrix();
